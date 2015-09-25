@@ -438,7 +438,7 @@ function runsetup() {
 	    for host in ${hosts[@]} ; do
 	        (ssh -nq -o StrictHostKeyChecking=no \
 	            -i "$PEM_PATH/$PEM_FILE" $USER@$host -p $REMOTE_PORT \
-	            "$REMOTE_HOME/install.sh $REMOTE_HOME $attemptjavainstall $JMETER_VERSION"\
+	            "$SHELL $REMOTE_HOME/install.sh $REMOTE_HOME $attemptjavainstall $JMETER_VERSION"\
 	            > $project_home/$DATETIME-$host-install.out) &
 	    done
 
