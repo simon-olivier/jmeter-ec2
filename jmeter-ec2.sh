@@ -155,8 +155,18 @@ function runsetup() {
         echo
 
         vpcsettings=""
+				sgsettings=""
 
         if [ -n "$SUBNET_ID" ] ; then vpcsettings="-s $SUBNET_ID --associate-public-ip-address \"true\""; fi
+
+				# handle multiple security group
+				if [ -n "$INSTANCE_SECURITYGROUPS"] && ["$INSTANCE_SECURITYGROUPS" == *","*]; then
+					arr=$(echo "$INSTANCE_SECURITYGROUPS" | tr "," "\n")
+					for sg in $INSTANCE_SECURITYGROUPS; do
+						sgsettings+="-g $sg"
+				elif [ -n "$INSTANCE_SECURITYGROUPS"]; then
+					sgsettings="-g $INSTANCE_SECURITYGROUPS"
+				fi
 
         # create the instance(s) and capture the instance id(s)
         if [ -z "$price" ] ; then
@@ -165,7 +175,7 @@ function runsetup() {
           attempted_instanceids=(`ec2-run-instances \
                           --key "$AMAZON_KEYPAIR_NAME" \
                       -t "$INSTANCE_TYPE" \
-                      -g "$INSTANCE_SECURITYGROUP" \
+                      $sgsettings \
                       -n 1-$instance_count \
                       $vpcsettings \
                           --region $REGION \
@@ -179,7 +189,7 @@ function runsetup() {
           spot_instance_request_id=(`ec2-request-spot-instances -p $price \
                   --key $AMAZON_KEYPAIR_NAME \
                       -t $INSTANCE_TYPE \
-                      -g $INSTANCE_SECURITYGROUP \
+                      -g $INSTANCE_SECURITYGROUPS \
                       -n $instance_count \
                       $vpcsettings \
                   --region $REGION \
@@ -1118,5 +1128,3 @@ check_prereqs
 runsetup
 runtest
 runcleanup
-
-
